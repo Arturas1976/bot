@@ -38,21 +38,27 @@ symbols = [
 
 def send_signal(symbol, signal):
     text = f"📊 [{symbol}]\n{signal}"
-    send_message(CHAT_ID_1, text)
-    send_message(CHAT_ID_2, text)
+    for chat_id in [CHAT_ID_1, CHAT_ID_2]:
+        send_message(chat_id, text)
+        time.sleep(0.2)  # för att undvika rate-limit
+
 
 
 def get_price_data(symbol, interval='1h', period='1mo'):
     try:
-        df = yf.download(symbol, interval=interval, period=period)
+        df = yf.download(symbol, interval=interval, period=period, progress=False)
+        if df.empty or not all(col in df.columns for col in ['Open', 'High', 'Low', 'Close']):
+            send_error_signal(f"[{symbol}] Fel: Saknar prisdata eller kolumner")
+            return None
         df = df[['Open', 'High', 'Low', 'Close']]
         return df
     except Exception as e:
-        send_error_signal(f"[data_provider] Fel: {e}")
+        send_error_signal(f"[{symbol}] Fel vid nedladdning: {e}")
         return None
 
 
 def calculate_indicators(df):
+    df = df.copy()
     delta = df["Close"].diff()
     gain = delta.where(delta > 0, 0)
     loss = -delta.where(delta < 0, 0)
@@ -68,7 +74,13 @@ def calculate_indicators(df):
     df["macd"] = exp1 - exp2
     df["macd_signal"] = df["macd"].ewm(span=9, adjust=False).mean()
 
-    return df.dropna()
+    df = df.dropna()
+
+    if df.empty:
+        send_error_signal(f"[indikator] Fel: Alla indikatorvärden blev NaN")
+
+    return df
+
 
 
 def analyze_symbol(symbol):
@@ -123,10 +135,11 @@ def notify_start():
 
 
 if __name__ == "__main__":
-    try:
-        notify_start()
-        while True:
+    notify_start()
+    while True:
+        try:
             analyze_symbols()
-            time.sleep(3600)  # Väntar 1 timme
-    except Exception as e:
-        send_error_signal(f"Fel: {str(e)}")
+        except Exception as e:
+            send_error_signal(f"Fel i huvudloop: {str(e)}")
+        time.sleep(3600)  # Vänta 1 timme
+
