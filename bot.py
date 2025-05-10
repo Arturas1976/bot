@@ -41,7 +41,9 @@ symbols = [
 # Skicka signal
 def send_signal(symbol, signal):
     text = f"📊 [{symbol}]\n{signal}"
-    send_message(text)
+    send_message(CHAT_ID_1, text)
+    send_message(CHAT_ID_2, text)
+
 
 # Hämta prisdata med yfinance
 def get_price_data(symbol, interval='1h', period='1mo'):
