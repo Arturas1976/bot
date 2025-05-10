@@ -80,8 +80,16 @@ def analyze_symbol(symbol):
     if df is None or df.empty:
         return None
 
+    if len(df) < 30:
+        send_error_signal(f"[{symbol}] Fel: För lite data ({len(df)} rader)")
+        return None
+
     df = calculate_indicators(df)
     latest = df.iloc[-1]
+
+    if not isinstance(latest, pd.Series):
+        send_error_signal(f"[{symbol}] Fel: Förväntade Series men fick {type(latest)}")
+        return None
 
     if latest['rsi'] < 30 and latest['macd'] > latest['macd_signal']:
         return "💰 *KÖP-signal!* RSI översålt och MACD bullish"
@@ -89,6 +97,7 @@ def analyze_symbol(symbol):
         return "🚨 *SÄLJ-signal!* RSI överköpt och MACD bearish"
     else:
         return None
+
 
 
 # Huvudanalysfunktionen som körs för alla symboler
