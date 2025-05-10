@@ -22,30 +22,26 @@ def send_message(chat_id, text):
         print(f"Fel vid sändning av meddelande: {response.status_code}, {response.text}")
 
 
-
-# Skicka felmeddelande
 def send_error_signal(message):
     send_message(CHAT_ID_1, f"⚠️ *Fel:* {message}")
     send_message(CHAT_ID_2, f"⚠️ *Fel:* {message}")
-
 
 
 # Valutapar, råvaror och index som ska analyseras
 symbols = [
     'EURUSD=X', 'GBPUSD=X', 'AUDUSD=X', 'NZDUSD=X', 'USDCHF=X',
     'EURGBP=X', 'EURAUD=X', 'GBPAUD=X', 'GBPNZD=X', 'AUDNZD=X',
-    'GC=F', 'SI=F', 'BZ=F',  # Brent olja istället för WTI, GC=F för Guld och SI=F för Silver
+    'GC=F', 'SI=F', 'BZ=F',  # Brent olja, Guld, Silver
     '^GSPC', '^DJI', '^IXIC'  # S&P500, Dow Jones, Nasdaq
 ]
 
-# Skicka signal
+
 def send_signal(symbol, signal):
     text = f"📊 [{symbol}]\n{signal}"
     send_message(CHAT_ID_1, text)
     send_message(CHAT_ID_2, text)
 
 
-# Hämta prisdata med yfinance
 def get_price_data(symbol, interval='1h', period='1mo'):
     try:
         df = yf.download(symbol, interval=interval, period=period)
@@ -55,7 +51,7 @@ def get_price_data(symbol, interval='1h', period='1mo'):
         send_error_signal(f"[data_provider] Fel: {e}")
         return None
 
-# Beräkna RSI och MACD indikatorer
+
 def calculate_indicators(df):
     delta = df["Close"].diff()
     gain = delta.where(delta > 0, 0)
@@ -72,9 +68,9 @@ def calculate_indicators(df):
     df["macd"] = exp1 - exp2
     df["macd_signal"] = df["macd"].ewm(span=9, adjust=False).mean()
 
-    return df
+    return df.dropna()
 
-# Analysera varje symbol och skicka signaler
+
 def analyze_symbol(symbol):
     df = get_price_data(symbol, interval='1h', period='1mo')
     if df is None or df.empty:
@@ -85,22 +81,28 @@ def analyze_symbol(symbol):
         return None
 
     df = calculate_indicators(df)
+    if df.empty:
+        send_error_signal(f"[{symbol}] Fel: Data saknar indikatorvärden (RSI/MACD)")
+        return None
+
     latest = df.iloc[-1]
 
-    if not isinstance(latest, pd.Series):
-        send_error_signal(f"[{symbol}] Fel: Förväntade Series men fick {type(latest)}")
-        return None
+    try:
+        rsi = latest['rsi']
+        macd = latest['macd']
+        macd_signal = latest['macd_signal']
 
-    if latest['rsi'] < 30 and latest['macd'] > latest['macd_signal']:
-        return "💰 *KÖP-signal!* RSI översålt och MACD bullish"
-    elif latest['rsi'] > 70 and latest['macd'] < latest['macd_signal']:
-        return "🚨 *SÄLJ-signal!* RSI överköpt och MACD bearish"
-    else:
-        return None
+        if pd.notna(rsi) and pd.notna(macd) and pd.notna(macd_signal):
+            if rsi < 30 and macd > macd_signal:
+                return "💰 *KÖP-signal!* RSI översålt och MACD bullish"
+            elif rsi > 70 and macd < macd_signal:
+                return "🚨 *SÄLJ-signal!* RSI överköpt och MACD bearish"
+    except Exception as e:
+        send_error_signal(f"[{symbol}] Fel vid analys: {str(e)}")
+
+    return None
 
 
-
-# Huvudanalysfunktionen som körs för alla symboler
 def analyze_symbols():
     for symbol in symbols:
         try:
@@ -110,18 +112,17 @@ def analyze_symbols():
         except Exception as e:
             send_error_signal(f"Fel vid {symbol}: {str(e)}")
 
-# Skicka ett meddelande när boten startar
+
 def notify_start():
     send_message(CHAT_ID_1, "✅ *Signalboten är igång* – analyserar varje timme.")
     send_message(CHAT_ID_2, "✅ *Signalboten är igång* – analyserar varje timme.")
 
 
-# Huvudloop som körs för att analysera varje timme
 if __name__ == "__main__":
     try:
         notify_start()
         while True:
             analyze_symbols()
-            time.sleep(3600)  # Väntar 1 timme innan nästa analys
+            time.sleep(3600)  # Väntar 1 timme
     except Exception as e:
         send_error_signal(f"Fel: {str(e)}")
