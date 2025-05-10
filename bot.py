@@ -55,5 +55,20 @@ def get_data(symbol, interval="1h", period="7d"):
 
 
 def calculate_indicators(df):
-    df["rsi"] = df["Close"].rolling(14).apply(lambda x: (x[-1] - x.mean()) / x.std(), raw=True)
-    df["macd"] = df["Close"].
+    delta = df["Close"].diff()
+    gain = delta.where(delta > 0, 0)
+    loss = -delta.where(delta < 0, 0)
+
+    avg_gain = gain.rolling(window=14).mean()
+    avg_loss = loss.rolling(window=14).mean()
+
+    rs = avg_gain / avg_loss
+    df["rsi"] = 100 - (100 / (1 + rs))
+
+    exp1 = df["Close"].ewm(span=12, adjust=False).mean()
+    exp2 = df["Close"].ewm(span=26, adjust=False).mean()
+    df["macd"] = exp1 - exp2
+    df["macd_signal"] = df["macd"].ewm(span=9, adjust=False).mean()
+
+    return df
+
