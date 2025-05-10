@@ -91,15 +91,20 @@ try:
     rsi = float(latest['rsi'])
     macd = float(latest['macd'])
     macd_signal = float(latest['macd_signal'])
-    
-    send_error_signal(f"[{symbol}] Debug: rsi={type(rsi)}, macd={type(macd)}, macd_signal={type(macd_signal)}")
+
+    if any(pd.isna([rsi, macd, macd_signal])):
+        send_error_signal(f"[{symbol}] Fel: Indikator innehåller NaN")
+        return None
 
     if rsi < 30 and macd > macd_signal:
         return "💰 *KÖP-signal!* RSI översålt och MACD bullish"
     elif rsi > 70 and macd < macd_signal:
         return "🚨 *SÄLJ-signal!* RSI överköpt och MACD bearish"
+except Exception as e:
+    send_error_signal(f"[{symbol}] Fel vid analys: {str(e)}")
 
-    return None
+return None
+
 
 
 def analyze_symbols():
