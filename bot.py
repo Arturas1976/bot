@@ -1,59 +1,56 @@
 import os
-import time
 import requests
-import yfinance as yf
 import pandas as pd
+import yfinance as yf
+import time
 
-# Telegram miljövariabler
-TOKEN = os.getenv("8011911124:AAE54JLc8CVfWX-yI7vmzwfLgdwPzNuSd3Q")  # t.ex. '123456789:ABC...'
-CHAT_IDS = os.getenv("7515400567", "5114921471").split(",")  # flera ID med komma
+# Hämta miljövariabler
+TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')  # Telegram Bot Token
+CHAT_ID_1 = os.getenv('TELEGRAM_CHAT_ID_1')  # Telegram Chat ID för första användaren
+CHAT_ID_2 = os.getenv('TELEGRAM_CHAT_ID_2')  # Telegram Chat ID för andra användaren
 
-# Valutapar
-forex_pairs = [
-    "EURUSD=X", "GBPUSD=X", "USDJPY=X", "USDCHF=X", "AUDUSD=X", "NZDUSD=X",
-    "USDCAD=X", "EURGBP=X", "EURJPY=X", "GBPJPY=X", "AUDJPY=X", "CHFJPY=X"
+# Skicka meddelande till Telegram
+def send_message(text):
+    url = f'https://api.telegram.org/bot{TOKEN}/sendMessage'
+    payload = {
+        'chat_id': CHAT_ID_1, 
+        'text': text, 
+        'parse_mode': 'Markdown'
+    }
+    requests.post(url, data=payload)
+
+    # Skicka också till andra användaren
+    payload['chat_id'] = CHAT_ID_2
+    requests.post(url, data=payload)
+
+# Skicka felmeddelande
+def send_error_signal(message):
+    send_message(f"⚠️ *Fel:* {message}")
+
+# Valutapar, råvaror och index som ska analyseras
+symbols = [
+    'EURUSD=X', 'GBPUSD=X', 'AUDUSD=X', 'NZDUSD=X', 'USDCHF=X',
+    'EURGBP=X', 'EURAUD=X', 'GBPAUD=X', 'GBPNZD=X', 'AUDNZD=X',
+    'XAUUSD=X', 'XAGUSD=X', 'WTI=X', 'GC=F', 'SI=F',  # Guld, Silver och olja
+    '^GSPC', '^DJI', '^IXIC'  # S&P500, Dow Jones, Nasdaq
 ]
 
-# Råvaror
-commodities = [
-    "GC=F",   # Gold
-    "SI=F",   # Silver
-    "CL=F",   # Crude Oil
-    "HG=F",   # Copper
-    "PL=F",   # Platinum
-    "PA=F"    # Palladium
-]
+# Skicka signal
+def send_signal(symbol, signal):
+    text = f"📊 [{symbol}]\n{signal}"
+    send_message(text)
 
-# Index
-indices = [
-    "^GSPC", "^DJI", "^IXIC", "^FTSE", "^N225", "^GDAXI", "^FCHI", "^STOXX50E"
-]
-
-# Kombinera alla
-symbols = forex_pairs + commodities + indices
-
-
-def send_telegram_message(text):
-    for chat_id in CHAT_IDS:
-        if not chat_id:
-            continue
-        url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
-        payload = {"chat_id": chat_id.strip(), "text": text, "parse_mode": "Markdown"}
-        try:
-            requests.post(url, data=payload)
-        except Exception as e:
-            print(f"[Telegram] Fel: {e}")
-
-
-def get_data(symbol, interval="1h", period="7d"):
+# Hämta prisdata med yfinance
+def get_price_data(symbol, interval='1h', period='1mo'):
     try:
-        df = yf.download(tickers=symbol, interval=interval, period=period)
-        return df[['Open', 'High', 'Low', 'Close']]
+        df = yf.download(symbol, interval=interval, period=period)
+        df = df[['Open', 'High', 'Low', 'Close']]
+        return df
     except Exception as e:
-        print(f"[Data] Fel för {symbol}: {e}")
+        send_error_signal(f"[data_provider] Fel: {e}")
         return None
 
-
+# Beräkna RSI och MACD indikatorer
 def calculate_indicators(df):
     delta = df["Close"].diff()
     gain = delta.where(delta > 0, 0)
@@ -111,4 +108,3 @@ if __name__ == "__main__":
             time.sleep(3600)  # Väntar 1 timme innan nästa analys
     except Exception as e:
         send_error_signal(f"Fel: {str(e)}")
-
