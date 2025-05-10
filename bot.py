@@ -106,7 +106,7 @@ try:
 
     if any(pd.isna([rsi, macd, macd_signal])):
         send_error_signal(f"[{symbol}] Fel: Indikator innehåller NaN")
-        return None
+    return None
 
     if rsi < 30 and macd > macd_signal:
         return "💰 *KÖP-signal!* RSI översålt och MACD bullish"
