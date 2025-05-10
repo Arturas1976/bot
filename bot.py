@@ -72,3 +72,43 @@ def calculate_indicators(df):
 
     return df
 
+# Analysera varje symbol och skicka signaler
+def analyze_symbol(symbol):
+    df = get_price_data(symbol, interval='1h', period='1mo')
+    if df is None or df.empty:
+        return None
+
+    df = calculate_indicators(df)
+    latest = df.iloc[-1]
+
+    if latest['rsi'] < 30 and latest['macd'] > latest['macd_signal']:
+        return "💰 *KÖP-signal!* RSI översålt och MACD bullish"
+    elif latest['rsi'] > 70 and latest['macd'] < latest['macd_signal']:
+        return "🚨 *SÄLJ-signal!* RSI överköpt och MACD bearish"
+    else:
+        return None
+
+# Huvudanalysfunktionen som körs för alla symboler
+def analyze_symbols():
+    for symbol in symbols:
+        try:
+            signal = analyze_symbol(symbol)
+            if signal:
+                send_signal(symbol, signal)
+        except Exception as e:
+            send_error_signal(f"Fel vid {symbol}: {str(e)}")
+
+# Skicka ett meddelande när boten startar
+def notify_start():
+    send_message("✅ *Signalboten är igång* – analyserar varje timme.")
+
+# Huvudloop som körs för att analysera varje timme
+if __name__ == "__main__":
+    try:
+        notify_start()
+        while True:
+            analyze_symbols()
+            time.sleep(3600)  # Väntar 1 timme innan nästa analys
+    except Exception as e:
+        send_error_signal(f"Fel: {str(e)}")
+
