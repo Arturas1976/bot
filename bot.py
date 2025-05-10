@@ -5,9 +5,9 @@ import yfinance as yf
 import time
 
 # Hämta miljövariabler
-TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')  # Telegram Bot Token
-CHAT_ID_1 = os.getenv('TELEGRAM_CHAT_ID_1')  # Telegram Chat ID för första användaren
-CHAT_ID_2 = os.getenv('TELEGRAM_CHAT_ID_2')  # Telegram Chat ID för andra användaren
+TOKEN = os.getenv('8011911124:AAE54JLc8CVfWX-yI7vmzwfLgdwPzNuSd3Q')  # Telegram Bot Token
+CHAT_ID_1 = os.getenv('7515400567')  # Telegram Chat ID för första användaren
+CHAT_ID_2 = os.getenv('5114921471')  # Telegram Chat ID för andra användaren
 
 # Skicka meddelande till Telegram
 def send_message(text):
@@ -31,7 +31,7 @@ def send_error_signal(message):
 symbols = [
     'EURUSD=X', 'GBPUSD=X', 'AUDUSD=X', 'NZDUSD=X', 'USDCHF=X',
     'EURGBP=X', 'EURAUD=X', 'GBPAUD=X', 'GBPNZD=X', 'AUDNZD=X',
-    'XAUUSD=X', 'XAGUSD=X', 'WTI=X', 'GC=F', 'SI=F',  # Guld, Silver och olja
+    'GC=F', 'SI=F', 'BZ=F',  # Brent olja istället för WTI, GC=F för Guld och SI=F för Silver
     '^GSPC', '^DJI', '^IXIC'  # S&P500, Dow Jones, Nasdaq
 ]
 
