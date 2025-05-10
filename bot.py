@@ -89,4 +89,6 @@ if __name__ == "__main__":
         except Exception as e:
             send_error_signal(str(e))
 
-        time.sleep(3600)  # Väntar 1 timme innan nästa analys
+        ANALYSIS_INTERVAL = 3600  # 1 timme i sekunder
+time.sleep(ANALYSIS_INTERVAL)
+
