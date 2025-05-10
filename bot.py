@@ -12,13 +12,16 @@ CHAT_ID_2 = os.getenv('5114921471')  # Telegram Chat ID för andra användaren
 import requests
 
 def send_message(chat_id, text):
-    url = f'https://api.telegram.org/bot{TOKEN}/sendMessage'
-    payload = {'chat_id': chat_id, 'text': text, 'parse_mode': 'Markdown'}
+    url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
+    payload = {
+        "chat_id": chat_id,
+        "text": text,
+        "parse_mode": "Markdown"
+    }
     response = requests.post(url, data=payload)
-    if response.status_code != 200:
+    if not response.ok:
         print(f"Fel vid sändning av meddelande: {response.status_code}, {response.text}")
-    else:
-        print(f"Medelande skickat till {chat_id}: {text}")
+
 
 
 # Skicka felmeddelande
@@ -98,9 +101,8 @@ def analyze_symbols():
 
 # Skicka ett meddelande när boten startar
 def notify_start():
-    start_message = "✅ *Signalboten är igång* – analyserar varje timme."
-    send_message(CHAT_ID_1, start_message)  # Skickar till användare 1
-    send_message(CHAT_ID_2, start_message)  # Skickar till användare 2
+    send_message(CHAT_ID_1, "✅ *Signalboten är igång* – analyserar varje timme.")
+    send_message(CHAT_ID_2, "✅ *Signalboten är igång* – analyserar varje timme.")
 
 
 # Huvudloop som körs för att analysera varje timme
