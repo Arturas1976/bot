@@ -10,8 +10,6 @@ CHAT_ID_1 = os.getenv('TELEGRAM_CHAT_ID_1')
 CHAT_ID_2 = os.getenv('TELEGRAM_CHAT_ID_2')
 
 
-import requests
-
 def send_message(chat_id, text):
     url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
     payload = {
