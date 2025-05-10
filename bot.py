@@ -34,9 +34,16 @@ def get_price_data(symbol, interval='1h', limit=200):
         return None
 
 def send_message(text):
-    url = f'https://api.telegram.org/bot{TOKEN}/sendMessage'
-    payload = {'chat_id': CHAT_ID, 'text': text, 'parse_mode': 'Markdown'}
-    requests.post(url, data=payload)
+    chat_ids = [CHAT_ID_1, CHAT_ID_2]  # Lägg till flera Chat ID här om du vill ha fler användare
+    for chat_id in chat_ids:
+        url = f'https://api.telegram.org/bot{TOKEN}/sendMessage'
+        payload = {'chat_id': chat_id, 'text': text, 'parse_mode': 'Markdown'}
+        try:
+            response = requests.post(url, data=payload)
+            response.raise_for_status()  # Kontrollera om HTTP-anropet misslyckades
+        except requests.exceptions.RequestException as e:
+            print(f"Fel vid sändning av meddelande till {chat_id}: {e}")
+
 
 def send_signal(symbol, signal):
     text = f"📊 [{symbol}]\n{signal}"
