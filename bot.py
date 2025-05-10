@@ -116,10 +116,8 @@ except Exception as e:
     send_error_signal(f"[{symbol}] Fel vid analys: {str(e)}")
     return None
 
-
+    
     return None
-
-
 
 
 def analyze_symbols():
