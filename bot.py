@@ -83,12 +83,13 @@ def analyze_symbol(symbol):
     df = calculate_indicators(df)
     latest = df.iloc[-1]
 
-   if latest['rsi'] < 30 and latest['macd'] > latest['macd_signal']:
+    if latest['rsi'] < 30 and latest['macd'] > latest['macd_signal']:
         return "💰 *KÖP-signal!* RSI översålt och MACD bullish"
     elif latest['rsi'] > 70 and latest['macd'] < latest['macd_signal']:
         return "🚨 *SÄLJ-signal!* RSI överköpt och MACD bearish"
     else:
         return None
+
 
 # Huvudanalysfunktionen som körs för alla symboler
 def analyze_symbols():
