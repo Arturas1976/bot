@@ -5,7 +5,7 @@ import yfinance as yf
 import time
 
 # Hämta miljövariabler
-TOKEN = os.getenv('8011911124:AAE54JLc8CVfWX-yI7vmzwfLgdwPzNuSd3Q')  # Telegram Bot Token
+TOKEN = os.getenv('8011911124:AAE54lLc8CVfWX-yI7vmzwfLgdwPzNuSd3Q')  # Telegram Bot Token
 CHAT_ID_1 = os.getenv('7515400567')  # Telegram Chat ID för första användaren
 CHAT_ID_2 = os.getenv('5114921471')  # Telegram Chat ID för andra användaren
 
