@@ -97,25 +97,27 @@ def analyze_symbol(symbol):
         send_error_signal(f"[{symbol}] Fel: Data saknar indikatorvärden (RSI/MACD)")
         return None
 
-latest = df.iloc[-1]
+    latest = df.iloc[-1]
 
-try:
-    rsi = float(latest['rsi'])
-    macd = float(latest['macd'])
-    macd_signal = float(latest['macd_signal'])
+    try:
+        rsi = float(latest['rsi'])
+        macd = float(latest['macd'])
+        macd_signal = float(latest['macd_signal'])
 
-    if any(pd.isna([rsi, macd, macd_signal])):
-        send_error_signal(f"[{symbol}] Fel: Indikator innehåller NaN")
+        if any(pd.isna([rsi, macd, macd_signal])):
+            send_error_signal(f"[{symbol}] Fel: Indikator innehåller NaN")
+            return None
+
+        if rsi < 30 and macd > macd_signal:
+            return "💰 *KÖP-signal!* RSI översålt och MACD bullish"
+        elif rsi > 70 and macd < macd_signal:
+            return "🚨 *SÄLJ-signal!* RSI överköpt och MACD bearish"
+    except Exception as e:
+        send_error_signal(f"[{symbol}] Fel vid analys: {str(e)}")
         return None
 
-    if rsi < 30 and macd > macd_signal:
-        return "💰 *KÖP-signal!* RSI översålt och MACD bullish"
-    elif rsi > 70 and macd < macd_signal:
-        return "🚨 *SÄLJ-signal!* RSI överköpt och MACD bearish"
-except Exception as e:
-    send_error_signal(f"[{symbol}] Fel vid analys: {str(e)}")
+    return None
 
-return None
 
 
 
