@@ -9,7 +9,8 @@ TOKEN = os.getenv('8011911124:AAE54JLc8CVfWX-yI7vmzwfLgdwPzNuSd3Q')  # Telegram 
 CHAT_ID_1 = os.getenv('7515400567')  # Telegram Chat ID för första användaren
 CHAT_ID_2 = os.getenv('5114921471')  # Telegram Chat ID för andra användaren
 
-# Skickar meddelande till Telegram
+import requests
+
 def send_message(chat_id, text):
     url = f'https://api.telegram.org/bot{TOKEN}/sendMessage'
     payload = {'chat_id': chat_id, 'text': text, 'parse_mode': 'Markdown'}
@@ -19,9 +20,13 @@ def send_message(chat_id, text):
     else:
         print(f"Medelande skickat till {chat_id}: {text}")
 
+
 # Skicka felmeddelande
 def send_error_signal(message):
-    send_message(f"⚠️ *Fel:* {message}")
+    send_message(CHAT_ID_1, f"⚠️ *Fel:* {message}")
+    send_message(CHAT_ID_2, f"⚠️ *Fel:* {message}")
+
+
 
 # Valutapar, råvaror och index som ska analyseras
 symbols = [
@@ -74,7 +79,7 @@ def analyze_symbol(symbol):
     df = calculate_indicators(df)
     latest = df.iloc[-1]
 
-    if latest['rsi'] < 30 and latest['macd'] > latest['macd_signal']:
+    if latest['rsi'].iloc[0] < 30 and latest['macd'].iloc[0] > latest['macd_signal'].iloc[0]:
         return "💰 *KÖP-signal!* RSI översålt och MACD bullish"
     elif latest['rsi'] > 70 and latest['macd'] < latest['macd_signal']:
         return "🚨 *SÄLJ-signal!* RSI överköpt och MACD bearish"
