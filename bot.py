@@ -85,20 +85,17 @@ def analyze_symbol(symbol):
         send_error_signal(f"[{symbol}] Fel: Data saknar indikatorvärden (RSI/MACD)")
         return None
 
-    latest = df.iloc[-1]
+latest = df.iloc[-1]
 
-    try:
-        rsi = latest['rsi']
-        macd = latest['macd']
-        macd_signal = latest['macd_signal']
+try:
+    rsi = float(latest['rsi'])
+    macd = float(latest['macd'])
+    macd_signal = float(latest['macd_signal'])
 
-        if pd.notna(rsi) and pd.notna(macd) and pd.notna(macd_signal):
-            if rsi < 30 and macd > macd_signal:
-                return "💰 *KÖP-signal!* RSI översålt och MACD bullish"
-            elif rsi > 70 and macd < macd_signal:
-                return "🚨 *SÄLJ-signal!* RSI överköpt och MACD bearish"
-    except Exception as e:
-        send_error_signal(f"[{symbol}] Fel vid analys: {str(e)}")
+    if rsi < 30 and macd > macd_signal:
+        return "💰 *KÖP-signal!* RSI översålt och MACD bullish"
+    elif rsi > 70 and macd < macd_signal:
+        return "🚨 *SÄLJ-signal!* RSI överköpt och MACD bearish"
 
     return None
 
