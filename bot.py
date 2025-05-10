@@ -3,12 +3,12 @@ import pandas as pd
 import time
 from twelvedata import TDClient
 
-# Telegram-konfiguration
-TOKEN = '8011911124:AAE54JLc8CVfWX-yI7vmzwfLgdwPzNuSd3Q'  # Telegram Bot Token
-CHAT_ID = '7515400567','5114921471'  # Telegram Chat ID
+# Hämta miljövariabler
+TOKEN = os.getenv('8011911124:AAE54JLc8CVfWX-yI7vmzwfLgdwPzNuSd3Q')  # Telegram Bot Token
+CHAT_ID_1 = os.getenv('7515400567')  # Telegram Chat ID för första användaren
+CHAT_ID_2 = os.getenv('5114921471')  # Telegram Chat ID för andra användaren
+API_KEY = os.getenv('462fd8d1d6c84883b1ab94b057702558')  # Twelve Data API Key
 
-# API-konfiguration för Twelve Data
-API_KEY = '462fd8d1d6c84883b1ab94b057702558'
 td = TDClient(apikey=API_KEY)
 
 # Valutapar och metaller som ska analyseras
