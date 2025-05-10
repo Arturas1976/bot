@@ -91,6 +91,8 @@ try:
     rsi = float(latest['rsi'])
     macd = float(latest['macd'])
     macd_signal = float(latest['macd_signal'])
+    
+    send_error_signal(f"[{symbol}] Debug: rsi={type(rsi)}, macd={type(macd)}, macd_signal={type(macd_signal)}")
 
     if rsi < 30 and macd > macd_signal:
         return "💰 *KÖP-signal!* RSI översålt och MACD bullish"
